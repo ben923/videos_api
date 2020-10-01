@@ -51,7 +51,7 @@ const Tag = sequelize.define('Tag', {
         allowNull: false,
         unique: true
     }
-});
+}, {timestamps: false});
 
 const VideoTag = sequelize.define('VideoTag', {
     id: {
@@ -63,7 +63,7 @@ const VideoTag = sequelize.define('VideoTag', {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: Video, // 'Movies' would also work
+          model: Video,
           key: 'id'
         }
     },
@@ -71,7 +71,47 @@ const VideoTag = sequelize.define('VideoTag', {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: Tag, // 'Movies' would also work
+          model: Tag,
+          key: 'id'
+        }
+    },
+}, {timestamps: false});
+
+const User = sequelize.define('User', {
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true
+    },
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+});
+
+const UserFavorite = sequelize.define('UserFavorite', {
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        primaryKey: true
+    },
+    UserId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: User,
+          key: 'id'
+        }
+    },
+    VideoId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: Video,
           key: 'id'
         }
     },
@@ -80,13 +120,18 @@ const VideoTag = sequelize.define('VideoTag', {
 
 Video.belongsToMany(Tag, { through: VideoTag });
 Tag.belongsToMany(Video, { through: VideoTag });
+User.belongsToMany(Video, { through: UserFavorite });
 
-Video.sync()
-Tag.sync()
-VideoTag.sync()
+Video.sync();
+Tag.sync();
+User.sync();
+UserFavorite.sync();
+VideoTag.sync();
 
 module.exports = {
     Video,
     Tag,
-    VideoTag
+    VideoTag,
+    User,
+    UserFavorite
 }
