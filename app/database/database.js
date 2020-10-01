@@ -118,15 +118,16 @@ const UserFavorite = sequelize.define('UserFavorite', {
 });
 
 
-Video.belongsToMany(Tag, { through: VideoTag });
-Tag.belongsToMany(Video, { through: VideoTag });
-User.belongsToMany(Video, { through: UserFavorite });
 
 Video.sync();
 Tag.sync();
 User.sync();
 UserFavorite.sync();
 VideoTag.sync();
+
+Video.belongsToMany(Tag, { through: VideoTag });
+Tag.belongsToMany(Video, { through: VideoTag });
+User.belongsToMany(Video, { through: UserFavorite });
 
 module.exports = {
     Video,
