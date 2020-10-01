@@ -25,3 +25,16 @@ DELETE | /{entity}/{id} | delete one entry |
 ---|---|---|---
 GET | /video/{id}/tag/{tagId} | associate one tag to one video |
 DELETE | /video/{id}/tag/{tagId} | delete on tag from a video |
+
+### body for post & put request
+body of the request must be as a model instance without id & timestamps
+
+for example at `POST /video` body must be like:
+```json
+{
+    "name": "best video ever",
+    "url": "an url",
+    "description": "this is a short description"
+}
+```
+# have fun
