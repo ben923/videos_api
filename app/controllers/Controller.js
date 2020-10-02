@@ -51,15 +51,13 @@ class Controller {
 
         this.entry = new this.model(entryToInsert);
 
-        return this.entry.validate()
+        this.entry.validate()
             .then(() => {
-                return this.entry.save()
-                    .then(result => {
-                        return res.status(200).json(result).end()
-                    })
+                this.entry.save()
+                res.status(200).json({created: 1}).end()
             })
             .catch(validator => {
-                return res.status(400).json(validator.errors).end()
+                res.status(400).json(validator.errors).end()
             })
     }
 
@@ -72,9 +70,10 @@ class Controller {
                     modelInstance[field] = value
                 }
                 return modelInstance.validate()
-                    .then(() => {
-                        return modelInstance.save()
-                            .then(result => res.status(200).json(modelInstance.toJSON()).end())
+                    .then(async () => {
+                        console.log('okay')
+                        res.status(200).json({updated: 1}).end()
+                        await modelInstance.save()
                     })
                     .catch(validator => {
                         return res.status(400).json(validator.errors).end()
