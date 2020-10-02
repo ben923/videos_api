@@ -1,5 +1,8 @@
 const Controller = require('./Controller');
 const {Tag} = require('../database/database');
+const {afterSave} = require('../database/hooks/video')
+const es = require('../database/elasticsearch');
+const redis = require('../cache/redisCacheService');
 
 class Video  extends Controller{
     constructor(props){
@@ -8,9 +11,75 @@ class Video  extends Controller{
     }
 
     addRoutes = () => {
+        this.server.get('/video/_/search', this.search);
         this.server.get('/video/:id/tag/:tagId', this.addTagToVideo);
         this.server.delete('/video/:id/tag/:tagId', this.removeTagToVideo);
         this.server.get(`/${this.constructor.name.toLowerCase()}/:id`, this.read);
+    }
+
+    search = (req, res) => {
+        const query = req.query;
+        const body = {
+            query: {
+                bool: {
+                    // must: []
+                }
+            }
+        }
+
+        if(query.term){
+            // body.query.bool.must.push({
+            //     match: {
+            //         name: query.term
+            //     }
+            // });
+
+            body.query.bool.should = [
+                {
+                    match: {
+                        'tags.name': query.term
+                    }
+                },
+                {
+                    match: {
+                        'name': query.term
+                    }
+                }
+            ];
+        }
+
+        var page = query.page && query.page > 0 ? page : 1;
+
+        console.log(JSON.stringify(body));
+
+        es.search({
+            index: 'videos',
+            size: 15,
+            from: (page -1) * 15,
+            body: body
+        }, (err, response) => {
+
+            if(!err){
+
+                const hits = response.body.hits.hits;
+                const ids = hits.map(item => item._source.id);
+
+                console.log(ids);
+    
+                this.model.findAll({
+                    where: {
+                        id: ids
+                    },
+                    include: 'Tags'
+                })
+                .then(videos => {
+                    res.status(200).json(videos).end();
+                })
+            } else {
+                res.status(500).send('unknown error').end()
+            }
+        })
+
     }
 
     removeTagToVideo = (req, res) => {
@@ -23,8 +92,11 @@ class Video  extends Controller{
                         .then(tagToRemove => {
                             modelInstance.removeTag(tagToRemove)
                             .then(async () => {
-                                const freshModel = await this.model.findByPk(modelInstance.id, {include: 'Tags'});
-                                return res.status(200).json(freshModel).end();
+                                await modelInstance.reload();
+
+                                afterSave(modelInstance);
+                                
+                                return res.status(200).json(modelInstance).end();
                             })
                             .catch(err => console.log(err))
                         })
@@ -60,11 +132,11 @@ class Video  extends Controller{
                             if(currentVideoTags.length === 0){
                                 videoInstance.addTag(tagModelInstance);
 
-                                const freshModel = await this.model.findByPk(videoInstance.id, {
-                                    include: 'Tags'
-                                });
+                                await videoInstance.reload();
 
-                                return res.status(200).json(freshModel).end();
+                                afterSave(videoInstance);
+                                return res.status(200).json(videoInstance).end();
+
                             } else {
                                 return res.status(400).json({
                                     associationError: "this model is already associated with this tag"
@@ -83,13 +155,21 @@ class Video  extends Controller{
     }
 
     read = (req, res) => {
-        return this.findOrFailById(req, res)
-            .then(modelInstance => {
-                return res.status(200).json(modelInstance.toJSON());
-            })
-            .catch(err => {
-                console.log(err)
-            })
+
+        redis.GET(`_video_/${req.query.id}`, (err, cached) => {
+            if(cached){
+                return res.status(200).json(cached).end()
+            } else {
+                this.findOrFailById(req, res)
+                .then(modelInstance => {
+                    redis.setex(`_video_/${modelInstance/id}`, 300, modelInstance);
+                    return res.status(200).json(modelInstance.toJSON());
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+            }
+        });
     }
 
     findOrFailById = (req, res) => {
