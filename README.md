@@ -38,4 +38,27 @@ for example at `POST /video` body must be like:
     "description": "this is a short description"
 }
 ```
+
+## additional for videos: search
+
+you can search videos by using `GET /video/_/search?term=searchTerm&page=optional`
+
+## for user part of the app
+
+| method | route | definition | additionnal params |
+---|---|---|---
+GET | /user/ | get current user entry | authorization header must be set
+POST | /user/login | log user with his credentials | for body see below
+POST | /user/register | register a user | for body see below
+
+### body for login & register
+
+```json
+{
+    "email": "email@example.com",
+    "password": "password",
+    "confirm_password": "only for register confir your password",
+}
+```
+
 # have fun
