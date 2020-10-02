@@ -71,7 +71,6 @@ class Controller {
                 }
                 return modelInstance.validate()
                     .then(async () => {
-                        console.log('okay')
                         res.status(200).json({updated: 1}).end()
                         await modelInstance.save()
                     })
