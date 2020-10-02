@@ -50,6 +50,8 @@ you can search videos by using `GET /video/_/search?term=searchTerm&page=optiona
 GET | /user/ | get current user entry | authorization header must be set
 POST | /user/login | log user with his credentials | for body see below
 POST | /user/register | register a user | for body see below
+POST | /user/favorites | get user favorites | 
+POST | /user/favorites/{videoId} | add a video to user favorites | 
 
 ### body for login & register
 
