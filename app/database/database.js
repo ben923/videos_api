@@ -13,7 +13,8 @@ if(undefined === user || undefined === pass || undefined === host ){
 }
 
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = new Sequelize(`postgres://${database.user}:${database.pass}@${database.host}:5432/videos`, {logging: false});
+const sequelize = new Sequelize(`postgres://${user}:${pass}@${host}:5432/videos`, {logging: false});
+const {afterCreate, afterDestroy, afterUpdate} = require('./hooks/video');
 
 try{
     sequelize.authenticate()
@@ -38,7 +39,14 @@ const Video = sequelize.define('Video', {
         type: DataTypes.STRING,
         allowNull: false
     }
-}, {timestamps: true});
+}, {
+    timestamps: true,
+    hooks: {
+        afterCreate,
+        afterUpdate,
+        afterDestroy,
+    }
+});
 
 const Tag = sequelize.define('Tag', {
     id: {
@@ -85,7 +93,8 @@ const User = sequelize.define('User', {
     },
     email: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
     password: {
         type: DataTypes.STRING,
