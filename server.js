@@ -1,17 +1,17 @@
 const express = require('express');
 const bootstrap = require('./bootstrap');
 const App = require('./app');
-const config = require('./config.json');
+const config = require('config');
 
-try {
-    var port = config.server.port;
-} catch (error) {
-    var port = 1337;
+let port = 1337;
+
+if (config.has('server.port')) {
+    port = config.get('server.port');
 }
 
 const server = express();
 
-for(const service in bootstrap){
+for (const service in bootstrap) {
     const serviceExecutor = bootstrap[service];
 
     server.use(serviceExecutor);
@@ -27,10 +27,7 @@ server.get('/', (req, res) => {
 
 console.log('charging app');
 
-new App({
-    server,
-    config
-});
+new App({ server });
 
 server.listen(port, () => {
     console.log(`listening on port ${port}`);
