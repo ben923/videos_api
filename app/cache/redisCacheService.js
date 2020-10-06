@@ -1,19 +1,28 @@
 const redis = require('redis');
-const config = require('../../config.json').app.redis;
+const config = require('config');
 
-const client = redis.createClient({
-    host: config.host,
-    port: config.port
-})
+const init = () => {
 
-client.on('error', (error) => {
-    throw(error);
-})
+    return new Promise((resolve, reject) => {
+        if(config.has('app.redis.port') && config.has('app.redis.host')){
+            const host = config.get('app.redis.host'), port = config.get('app.redis.port');
+            const client = redis.createClient({
+                host: host,
+                port: port
+            });
 
-try{
-    client.PING()
-} catch(err){
-    throw(Error("can't connect to redis verify server or config"))
+            client.on('error', (error) => {
+                reject(error);
+            })
+
+            client.on('ready', () => {
+                resolve(client)
+            })
+
+        } else {
+            reject(Error('no valid configuration found'));
+        }
+    })
 }
 
-module.exports = client
+module.exports = init
