@@ -52,7 +52,7 @@ class Video  extends Controller{
 
         console.log(JSON.stringify(body));
 
-        es.search({
+        this.es.search({
             index: 'videos',
             size: 15,
             from: (page -1) * 15,
@@ -156,13 +156,13 @@ class Video  extends Controller{
 
     read = (req, res) => {
 
-        redis.GET(`_video_/${req.query.id}`, (err, cached) => {
+        this.redis.GET(`_video_/${req.query.id}`, (err, cached) => {
             if(cached){
                 return res.status(200).json(cached).end()
             } else {
                 this.findOrFailById(req, res)
                 .then(modelInstance => {
-                    redis.setex(`_video_/${modelInstance/id}`, 300, modelInstance);
+                    this.redis.setex(`_video_/${modelInstance/id}`, 300, modelInstance);
                     return res.status(200).json(modelInstance.toJSON());
                 })
                 .catch(err => {
