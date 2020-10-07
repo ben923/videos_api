@@ -1,11 +1,10 @@
 const Controllers = require('./controllers');
-const Database = require('./database/database');
 
 class App {
     constructor(helper){
         for(const ControllerName in Controllers){
             const ControllerExecutor = Controllers[ControllerName];
-            const Model = Database[ControllerName];
+            const Model = helper.modules.models[ControllerName];
 
             console.log(ControllerName);
 
