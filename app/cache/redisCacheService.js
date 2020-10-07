@@ -20,7 +20,7 @@ const init = () => {
             })
 
         } else {
-            reject(Error('no valid configuration found'));
+            reject(Error('Redis - no valid configuration found'));
         }
     })
 }
