@@ -1,8 +1,10 @@
 class Controller {
     constructor(helper){
-        this.server = helper.server,
-        this.config = helper.config,
-        this.model = helper.model
+        this.server = helper.server;
+        this.config = helper.config;
+        this.model = helper.model;
+        this.es = helper.modules.esClient;
+        this.redis = helper.modules.redisClient;
 
         this.init()
     }
