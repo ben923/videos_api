@@ -1,6 +1,7 @@
 const express = require('express');
 const bootstrap = require('./bootstrap');
 const App = require('./app');
+const init = require('./init');
 const config = require('config');
 
 let port = 1337;
@@ -19,15 +20,26 @@ for (const service in bootstrap) {
     console.log(`loaded bootstrap script ${service}`);
 }
 
-server.get('/', (req, res) => {
-    res.status(200).json({
-        api_status: "OK"
-    }).end()
-})
+console.log('initing modules');
 
-console.log('charging app');
+init()
+    .then(modules => {
+        console.log('charging app');
+        new App({
+            modules,
+            server
+        });
 
-new App({ server });
+        server.get('/', (req, res) => {
+            res.status(200).json({
+                api_status: "OK"
+            }).end()
+        })
+    })
+    .catch(err => {
+        console.log(err);
+
+    })
 
 server.listen(port, () => {
     console.log(`listening on port ${port}`);
