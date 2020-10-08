@@ -92,7 +92,8 @@ describe('application start', function () {
                     new App({
                         modules: testedModules,
                         server: testedServer,
-                        logger: logger
+                        logger: logger,
+                        config: require('config')
                     })
 
                     testedServer.get('/', (req, res) => {
@@ -239,7 +240,66 @@ describe('application start', function () {
                         })
                     })
                 })
+
+                describe('user entity', function(){
+                    describe('creating a user', function(){
+                        it('should return field "token" with JWT token', function(done){
+                            const email = randomEmail();
+                            chai.request(testedServer)
+                                .post('/user/register')
+                                .send({
+                                    email: email,
+                                    password: '123456789',
+                                    confirm_password: '123456789'
+                                })
+                                .end((err, res) => {
+                                    res.should.have.status(200);
+                                    res.body.should.have.property('token');
+                                    done()
+                                })
+                        })
+                    })
+                    describe('logging a user', function(){
+                        it('should return field "token" with JWT token', function(done){
+                            const email = randomEmail();
+                            chai.request(testedServer)
+                                .post('/user/register')
+                                .send({
+                                    email: email,
+                                    password: '123456789',
+                                    confirm_password: '123456789'
+                                })
+                                .end((err, res) => {
+                                    chai.request(testedServer)
+                                    .post('/user/login')
+                                    .send({
+                                        email: email,
+                                        password: '123456789'
+                                    })
+                                    .end((err, res) => {
+                                        res.should.have.status(200);
+                                        res.body.should.have.property('token');
+                                        done()
+                                    })
+                                })
+                        })
+                    })
+                })
             })
         })
     })
 })
+
+function randomString(length){
+    var result           = '';
+    var characters       = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+
+function randomEmail(){
+    return `${randomString(10)}@${randomString(5)}.fr`
+}
