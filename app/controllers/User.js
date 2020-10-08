@@ -7,6 +7,7 @@ class User {
         this.server = helper.server;
         this.model = helper.model;
         this.config = helper.config;
+        this.logger = helper.logger;
 
         this.init();
     }
@@ -166,7 +167,6 @@ class User {
         if (body) {
             this.validate(body)
                 .then(async () => {
-                    console.log('start registering user');
                     const hashedPassword = bcrypt.hashSync(body.password, 10);
                     /**
                      * Champ email a unique: true mais le model s'insert quand meme si le user existe donc workaround
@@ -191,11 +191,11 @@ class User {
 
                     await newUser.save().catch(err => console.log(err));
 
-                    jwt.sign(newUser.toJSON(), this.config.app.authentication.secret, {
+                    jwt.sign(newUser.toJSON(), this.config.get('app.authentication.secret'), {
                         expiresIn: 600
                     }, (err, result) => {
                         if (err) {
-                            return res.status(400).json({ authenticationError: "cannot authanticate this user for the moment" });
+                            return res.status(400).json({ authenticationError: "cannot authanticate this user for the moment" }).end();
                         }
 
                         return res.status(200).json({
@@ -203,7 +203,9 @@ class User {
                         }).end();
                     })
                 })
-                .catch(err => res.status(400).json(err).end())
+                .catch(err => {
+                    res.status(400).json(err).end();
+                })
         }
     }
 
@@ -243,7 +245,7 @@ class User {
                             return reject({ passwordError: 'password & password confirmation are not equals' });
                         break;
                     case 'email':
-                        if (!/.+@[a-z]+\.[a-z]+/.test(body.email))
+                        if (!/.+@.+\.[a-z]+/.test(body.email))
                             return reject({ emailError: 'email seems not good' });
                         break;
                     default:
