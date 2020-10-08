@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const {Video} = require('../database/database')
+const initModels = require('../database/database')
 
 class User {
     constructor(helper) {
@@ -12,18 +12,23 @@ class User {
         this.init();
     }
 
-    init = () => {
-        this.server.use('/user', this.middlewareUser);
-        this.server.post('/user/login', this.login);
-        this.server.post('/user/register', this.register);
-        this.server.get('/user', this.user);
-        this.server.get('/user/favorite/:videoId', this.favorite);
-        this.server.get('/user/favorites/', this.userFavorites);
-        /**
-         * Pas de logout avec JWT le browser doit oublier le token pour être deconnecté
-         * mais pourquoi pas mise en place d'un fichier d'invalidation de tokens pour invalider la connexion 
-         * si le user s'est logout et empecher de future connexion avec ce token
-         */
+    init = async () => {
+
+        initModels()
+        .then(models => {
+            this.models = models;
+            this.server.use('/user', this.middlewareUser);
+            this.server.post('/user/login', this.login);
+            this.server.post('/user/register', this.register);
+            this.server.get('/user', this.user);
+            this.server.get('/user/favorite/:videoId', this.favorite);
+            this.server.get('/user/favorites/', this.userFavorites);
+            /**
+             * Pas de logout avec JWT le browser doit oublier le token pour être deconnecté
+             * mais pourquoi pas mise en place d'un fichier d'invalidation de tokens pour invalider la connexion 
+             * si le user s'est logout et empecher de future connexion avec ce token
+             */
+        })
     }
 
     userFavorites = (req, res) => {
@@ -55,7 +60,7 @@ class User {
     favorite = (req, res) => {
         const videoId = req.params.videoId;
 
-        Video.findOne({
+        this.models.Video.findOne({
             where: {
                 id: videoId
             }

@@ -1,18 +1,23 @@
 const Controller = require('./Controller');
-const {Tag} = require('../database/database');
+const initModels = require('../database/database');
 const {afterSave} = require('../database/hooks/video')
 
 class Video  extends Controller{
     constructor(props){
         super(props);
-        this.addRoutes();
+        this.addConfiguration();
     }
 
-    addRoutes = () => {
-        this.server.get('/video/_/search', this.search);
-        this.server.get('/video/:id/tag/:tagId', this.addTagToVideo);
-        this.server.delete('/video/:id/tag/:tagId', this.removeTagToVideo);
-        this.server.get(`/${this.constructor.name.toLowerCase()}/:id`, this.read);
+    addConfiguration = () => {
+        initModels()
+        .then(models => {
+            this.models = models;
+
+            this.server.get('/video/_/search', this.search);
+            this.server.get('/video/:id/tag/:tagId', this.addTagToVideo);
+            this.server.delete('/video/:id/tag/:tagId', this.removeTagToVideo);
+            this.server.get(`/${this.constructor.name.toLowerCase()}/:id`, this.read);
+        })
     }
 
     search = (req, res) => {
@@ -82,7 +87,7 @@ class Video  extends Controller{
                 const tagId = req.params.tagId;
 
                 if(tagId){
-                    Tag.findByPk(tagId)
+                    this.models.Tag.findByPk(tagId)
                         .then(tagToRemove => {
                             modelInstance.removeTag(tagToRemove)
                             .then(async () => {
@@ -110,7 +115,7 @@ class Video  extends Controller{
         this.findOrFailById(req, res)
             .then(videoInstance => {
                 if(tagId){
-                    Tag.findByPk(req.params.tagId)
+                    this.models.Tag.findByPk(req.params.tagId)
                     .then(async tagModelInstance => {
 
                         if(null === tagModelInstance){
