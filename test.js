@@ -3,6 +3,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const video = require('./app/database/hooks/video');
 const should = chai.should();
+const initModels = require('./app/database/database');
 
 chai.use(chaiHttp)
 
@@ -75,6 +76,14 @@ describe('application start', function () {
         })
     })
 
+    let logger;
+
+    describe('loading logger', function () {
+        it('should run without error', function () {
+            logger = require('./logger');
+        })
+    })
+
     describe('if server & modules are instancied', function () {
         describe('application start', function () {
             it('should run normally', function () {
@@ -82,7 +91,8 @@ describe('application start', function () {
                     const App = require('./app/index');
                     new App({
                         modules: testedModules,
-                        server: testedServer
+                        server: testedServer,
+                        logger: logger
                     })
 
                     testedServer.get('/', (req, res) => {
@@ -138,7 +148,6 @@ describe('application start', function () {
                     });
                     describe('getting one video', function () {
                         it('should return one video instance', function (done) {
-                            const initModels = require('./app/database/database');
 
                             initModels().then(({ Video }) => {
                                 const video = new Video({
@@ -164,7 +173,6 @@ describe('application start', function () {
                     })
                     describe('deleting one video', function () {
                         it('should return deleted: 1', function (done) {
-                            const initModels = require('./app/database/database');
 
                             initModels().then(({ Video }) => {
                                 const video = new Video({
@@ -190,7 +198,6 @@ describe('application start', function () {
                     })
                     describe('updating one video', function () {
                         it('should return updated: 1', function (done) {
-                            const initModels = require('./app/database/database');
 
                             initModels().then(({ Video }) => {
                                 const video = new Video({
@@ -215,6 +222,20 @@ describe('application start', function () {
                                             });
                                     });
                             })
+                        })
+                    })
+                })
+
+                describe('Video entity: searching', function(){
+                    describe('making a search with no params', function(){
+                        it('should return all videos', function(done){
+                            chai.request(testedServer)
+                                .get(`/video/_/search`)
+                                .end((err, res) => {
+                                    res.should.have.status(200);
+                                    res.body.should.be.an('array');
+                                    done();
+                                });
                         })
                     })
                 })
