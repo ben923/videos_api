@@ -1,8 +1,6 @@
 const Controller = require('./Controller');
 const {Tag} = require('../database/database');
 const {afterSave} = require('../database/hooks/video')
-const es = require('../database/elasticsearch');
-const redis = require('../cache/redisCacheService');
 
 class Video  extends Controller{
     constructor(props){
