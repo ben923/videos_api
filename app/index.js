@@ -6,10 +6,10 @@ class App {
             const ControllerExecutor = Controllers[ControllerName];
             const Model = helper.modules.models[ControllerName];
 
-            console.log(ControllerName);
+            helper.logger.info(ControllerName);
 
             if(!Model){
-                console.log(`${ControllerName} has no model !`);
+                helper.logger.info(`${ControllerName} has no model !`);
                 continue;
             } else {
                 helper.model = Model;

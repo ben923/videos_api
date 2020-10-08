@@ -50,8 +50,6 @@ class Video  extends Controller{
 
         var page = query.page && query.page > 0 ? page : 1;
 
-        console.log(JSON.stringify(body));
-
         this.es.search({
             index: 'videos',
             size: 15,
@@ -63,8 +61,6 @@ class Video  extends Controller{
 
                 const hits = response.body.hits.hits;
                 const ids = hits.map(item => item._source.id);
-
-                console.log(ids);
     
                 this.model.findAll({
                     where: {
@@ -98,7 +94,7 @@ class Video  extends Controller{
                                 
                                 return res.status(200).json(modelInstance).end();
                             })
-                            .catch(err => console.log(err))
+                            .catch(err => this.logger.error(err))
                         })
                 } else {
                     return res.status(400).json({
@@ -144,7 +140,7 @@ class Video  extends Controller{
                             }
                         })
                         .catch(err => {
-                            console.log(err)
+                            this.logger.error(err)
                         });
                     })
                     .catch(err => {

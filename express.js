@@ -1,6 +1,7 @@
 const express = require('express');
 const bootstrap = require('./bootstrap');
 const config = require('config');
+const logger = require('./logger');
 
 const init = () => {
     return new Promise((resolve, reject) => {
@@ -17,14 +18,14 @@ const init = () => {
         
             server.use(serviceExecutor);
         
-            console.log(`loaded bootstrap script ${service}`);
+            logger.info(`loaded bootstrap script ${service}`);
         }
     
         server.listen(port, (err) => {
             if(err){
                 reject(err)
             }
-            console.log(`listening on port ${port}`);
+            logger.info(`listening on port ${port}`);
             resolve(server);
         });
     });

@@ -5,6 +5,7 @@ class Controller {
         this.model = helper.model;
         this.es = helper.modules.esClient;
         this.redis = helper.modules.redisClient;
+        this.logger = helper.logger;
 
         this.init()
     }

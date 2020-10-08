@@ -1,25 +1,27 @@
 const App = require('./app');
 const init = require('./init');
 const initExpress = require('./express');
+const logger = require('./logger');
 
 
-console.log('initing modules');
+logger.info('initing modules');
 
 init()
     .then(modules => {
-        console.log('charging app');
+        logger.info('charging app');
         initExpress()
         .then(server => {
             new App({
                 modules,
-                server
+                server,
+                logger
             });
         })
         .catch(err => {
-            console.log(err);
+            logger.error(err);
         })
     })
     .catch(err => {
-        console.log(err);
+        logger.error(err);
 
     })

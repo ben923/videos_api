@@ -1,6 +1,7 @@
 'use strict'
 
 const init = require('../elasticsearch');
+const logger = require('../../../logger');
 
 const toSearchableObject = (video) => {
     return new Promise((resolve, reject) => {
@@ -24,7 +25,7 @@ const esIndex = (video) => {
     toSearchableObject(video).then(searchableVideo => {
         init().then(es => {
 
-            console.log('indexing video')
+            logger.info('indexing video')
         
             es.search({
                 index: 'videos',
@@ -48,9 +49,9 @@ const esIndex = (video) => {
                         body: searchableVideo
                     }, (err, res) => {
                         if(!err){
-                            console.log('successfully indexed video');
+                            logger.info('successfully indexed video');
                         } else {
-                            console.log(err);
+                            logger.error(err);
                         }
                     });
                 } else {
@@ -61,9 +62,9 @@ const esIndex = (video) => {
                         body: searchableVideo
                     }, (err, res) => {
                         if(!err){
-                            console.log('successfully indexed video');
+                            logger.info('successfully indexed video');
                         } else {
-                            console.log(err);
+                            logger.error(err);
                         }
                     });
                 }
