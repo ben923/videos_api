@@ -3,6 +3,7 @@ const init = require('./init');
 const initExpress = require('./express');
 const logger = require('./logger');
 const config = require('config');
+
 logger.info('initing modules');
 
 init()
