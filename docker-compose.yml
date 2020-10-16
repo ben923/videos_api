@@ -1,0 +1,15 @@
+version: '2'
+services: 
+  web:
+    build:
+      command: node server.js
+      depends_on:
+        - postgres
+        - redis
+        - elasticsearch
+      environment:
+        NODE_APP_DEBUG: 'info'
+        ports:
+          - '1337:1337'
+      volumes:
+        - ./videos_api
