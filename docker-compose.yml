@@ -2,7 +2,7 @@ version: '2'
 services: 
   web:
     build:
-      command: node server.js
+      command: npm i && node server.js
       depends_on:
         - postgres
         - redis
@@ -12,4 +12,20 @@ services:
         ports:
           - '1337:1337'
       volumes:
-        - ./videos_api
+        - './videos_api:/var/app'
+  postgres:
+    image: postgres:13
+    volumes:
+      - './database/init.sql:/docker-entrypoint-initdb.d/init.sql'
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.4
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200'
