@@ -46,6 +46,7 @@ class Controller {
             })
             .catch(err => {
                 console.log(err)
+                return res.status(500).send(err).end()
             })
     }
 
@@ -54,18 +55,20 @@ class Controller {
 
         this.entry = new this.model(entryToInsert);
 
-        this.entry.validate()
+        return this.entry.validate()
             .then(() => {
                 this.entry.save()
-                res.status(200).json({created: 1}).end()
+                .then((result) => res.status(200).json({created: 1}).end())
+                .catch(err => res.status(500).send(err).end())
+                
             })
             .catch(validator => {
-                res.status(400).json(validator.errors).end()
+                return res.status(400).json(validator.errors).end()
             })
     }
 
     update = (req, res) => {
-        this.findOrFailById(req, res)
+        return this.findOrFailById(req, res)
             .then(modelInstance => {
                 for(const field in req.body){
                     const value = req.body[field];
@@ -74,8 +77,9 @@ class Controller {
                 }
                 return modelInstance.validate()
                     .then(async () => {
-                        res.status(200).json({updated: 1}).end()
-                        await modelInstance.save()
+                        modelInstance.save()
+                        .then(result => res.status(200).json({updated: 1}).end())
+                        .catch(err => res.status(500).send(err).end())
                     })
                     .catch(validator => {
                         return res.status(400).json(validator.errors).end()
@@ -91,10 +95,11 @@ class Controller {
     delete = (req, res) => {
         return this.findOrFailById(req, res)
             .then(modelInstance => {
-                modelInstance.destroy();
-                return res.status(200).json({
+                return modelInstance.destroy()
+                .then(result => res.status(200).json({
                     deleted: 1
-                }).end();
+                }).end())
+                .catch(err => res.status(500).send(err).end())
             });
     }
 
@@ -102,21 +107,19 @@ class Controller {
         const id = req.params.id;
 
         if(id){
-            return new Promise((resolve, reject) => {
-                this.model.findByPk(id)
-                .then(response => {
-                    if(null !== response){
-                        return resolve(response);
-                    } else {
-                        return reject(res.status(400).json({
-                            modelNotFoundError: `model not found for id ${id}`
-                        }).end());
-                    }
-                })
-                .catch(err => {
-                    return reject(res.status(200).json([]).end());
-                });
+            return this.model.findByPk(id)
+            .then(response => {
+                if(null !== response){
+                    return(response);
+                } else {
+                    return(res.status(400).json({
+                        modelNotFoundError: `model not found for id ${id}`
+                    }).end());
+                }
             })
+            .catch(err => {
+                return(res.status(200).json([]).end());
+            });
         } else {
             return res.status(400).json({
                 missingParamsError: "missing required parameter id"
