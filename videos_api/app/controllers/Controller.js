@@ -1,5 +1,5 @@
 class Controller {
-    constructor(helper){
+    constructor(helper) {
         this.server = helper.server;
         this.config = helper.config;
         this.model = helper.model;
@@ -21,9 +21,9 @@ class Controller {
     readAll = async (req, res) => {
         const limit = 15;
 
-        if(req.query.page){
+        if (req.query.page) {
             var page = Number(req.query.page);
-            if(page <= 0){
+            if (page <= 0) {
                 page = 1;
             }
         } else {
@@ -58,9 +58,9 @@ class Controller {
         return this.entry.validate()
             .then(() => {
                 this.entry.save()
-                .then((result) => res.status(200).json({created: 1}).end())
-                .catch(err => res.status(500).send(err).end())
-                
+                    .then((result) => res.status(200).json({ created: 1 }).end())
+                    .catch(err => res.status(500).send(err).end())
+
             })
             .catch(validator => {
                 return res.status(400).json(validator.errors).end()
@@ -70,16 +70,16 @@ class Controller {
     update = (req, res) => {
         return this.findOrFailById(req, res)
             .then(modelInstance => {
-                for(const field in req.body){
+                for (const field in req.body) {
                     const value = req.body[field];
 
                     modelInstance[field] = value
                 }
                 return modelInstance.validate()
-                    .then(async () => {
+                    .then(() => {
                         modelInstance.save()
-                        .then(result => res.status(200).json({updated: 1}).end())
-                        .catch(err => res.status(500).send(err).end())
+                            .then(result => res.status(200).json({ updated: 1 }).end())
+                            .catch(err => res.status(500).send(err).end())
                     })
                     .catch(validator => {
                         return res.status(400).json(validator.errors).end()
@@ -94,32 +94,28 @@ class Controller {
 
     delete = (req, res) => {
         return this.findOrFailById(req, res)
-            .then(modelInstance => {
-                return modelInstance.destroy()
-                .then(result => res.status(200).json({
-                    deleted: 1
-                }).end())
-                .catch(err => res.status(500).send(err).end())
-            });
+            .then(modelInstance => modelInstance.destroy())
+            .then(result => res.status(200).json({deleted: 1}).end())
+            .catch(err => res.status(500).send(err).end());
     }
 
     findOrFailById = (req, res) => {
         const id = req.params.id;
 
-        if(id){
+        if (id) {
             return this.model.findByPk(id)
-            .then(response => {
-                if(null !== response){
-                    return(response);
-                } else {
-                    return(res.status(400).json({
-                        modelNotFoundError: `model not found for id ${id}`
-                    }).end());
-                }
-            })
-            .catch(err => {
-                return(res.status(200).json([]).end());
-            });
+                .then(response => {
+                    if (null !== response) {
+                        return response;
+                    } else {
+                        return res.status(400).json({
+                            modelNotFoundError: `model not found for id ${id}`
+                        }).end();
+                    }
+                })
+                .catch(err => {
+                    return res.status(200).json([]).end();
+                });
         } else {
             return res.status(400).json({
                 missingParamsError: "missing required parameter id"

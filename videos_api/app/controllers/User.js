@@ -14,7 +14,7 @@ class User {
 
     init = async () => {
 
-        initModels()
+        return initModels()
         .then(models => {
             this.models = models;
             this.server.use('/user', this.middlewareUser);
@@ -28,13 +28,14 @@ class User {
              * mais pourquoi pas mise en place d'un fichier d'invalidation de tokens pour invalider la connexion 
              * si le user s'est logout et empecher de future connexion avec ce token
              */
+            return true;
         })
     }
 
     userFavorites = (req, res) => {
         const {id} = req.token
 
-        this.model.findOne({
+        return this.model.findOne({
             where: {
                 id: id
             },
@@ -60,13 +61,13 @@ class User {
     favorite = (req, res) => {
         const videoId = req.params.videoId;
 
-        this.models.Video.findOne({
+       return this.models.Video.findOne({
             where: {
                 id: videoId
             }
         }).then(video => {
             if(null !== video){
-                this.model.findOne({
+                return this.model.findOne({
                     where: {
                         id: req.token.id
                     },
@@ -81,16 +82,18 @@ class User {
 
                     const {id, email, createdAt, updatedAt, Videos} = currentUser;
 
-                    currentUser.addVideo(video);
-                    Videos.push(video);
-
-                    return res.status(200).json({
-                        id,
-                        email,
-                        createdAt,
-                        updatedAt,
-                        Videos
-                    }).end();
+                    return currentUser.addVideo(video)
+                    .then(() => {
+                        Videos.push(video);
+    
+                        return res.status(200).json({
+                            id,
+                            email,
+                            createdAt,
+                            updatedAt,
+                            Videos
+                        }).end();
+                    });
                 })
             } else {
                 return res.status(400).json({
@@ -105,7 +108,7 @@ class User {
     user = (req, res) => {
         const user = req.token;
 
-        this.model.findOne({
+        return this.model.findOne({
             where: {
                 id: user.id
             },
@@ -132,7 +135,7 @@ class User {
 
         if (body) {
             if (body.email && body.password && body.email !== "" && body.password !== "") {
-                this.model.findOne({
+                return this.model.findOne({
                     where: {
                         email: body.email
                     }
@@ -140,7 +143,7 @@ class User {
                     .then(user => {
                         if (null !== user) {
                             if (bcrypt.compareSync(body.password, user.password)) {
-                                jwt.sign(user.toJSON(), this.config.app.authentication.secret, (err, result) => {
+                                return jwt.sign(user.toJSON(), this.config.app.authentication.secret, (err, result) => {
                                     if (!err) {
                                         return res.status(200).json({
                                             token: result
@@ -170,7 +173,7 @@ class User {
         const body = req.body
 
         if (body) {
-            this.validate(body)
+            return this.validate(body)
                 .then(async () => {
                     const hashedPassword = bcrypt.hashSync(body.password, 10);
                     /**
@@ -182,7 +185,7 @@ class User {
                         }
                     })
                         .catch(err => {
-                            console.log(err);
+                            return console.log(err);
                         });
 
                     if (alreadyExistingUser > 0) {
@@ -194,23 +197,23 @@ class User {
                         password: hashedPassword
                     });
 
-                    await newUser.save().catch(err => console.log(err));
-
-                    jwt.sign(newUser.toJSON(), this.config.get('app.authentication.secret'), {
-                        expiresIn: 600
-                    }, (err, result) => {
-                        if (err) {
-                            return res.status(400).json({ authenticationError: "cannot authanticate this user for the moment" }).end();
-                        }
-
-                        return res.status(200).json({
-                            token: result
-                        }).end();
+                    return newUser.save()
+                    .then(() => {
+                        return jwt.sign(newUser.toJSON(), this.config.get('app.authentication.secret'), {
+                            expiresIn: 600
+                        }, (err, result) => {
+                            if (err) {
+                                return res.status(400).json({ authenticationError: "cannot authanticate this user for the moment" }).end();
+                            }
+    
+                            return res.status(200).json({
+                                token: result
+                            }).end();
+                        })
                     })
+                    .catch(err => console.log(err));
                 })
-                .catch(err => {
-                    res.status(400).json(err).end();
-                })
+                .catch(err => res.status(400).json(err).end())
         }
     }
 
@@ -222,7 +225,7 @@ class User {
             return next();
         }
         else if (token) {
-            jwt.verify(token, this.config.app.authentication.secret, (err, decoded) => {
+            return jwt.verify(token, this.config.app.authentication.secret, (err, decoded) => {
                 if (err) {
                     return res.status(401).send('Unauthorized').end()
                 } else {

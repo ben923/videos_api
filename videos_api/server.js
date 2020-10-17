@@ -12,7 +12,6 @@ return Promise.all([
     initExpress()
 ])
     .then(([modules, server]) => {
-        console.log(modules, server)
         return new App({
             modules,
             server,
