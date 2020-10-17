@@ -11,7 +11,10 @@ const init = () => {
             await client.indices.create({
                 index: 'videos'
             })
-            .catch(err => console.log(err));
+            .catch(err => {
+                if(err.message != 'resource_already_exists_exception')
+                    return console.log(err.message)
+            });
 
             resolve(client)
         } else {
