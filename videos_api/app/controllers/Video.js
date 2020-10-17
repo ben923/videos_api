@@ -61,22 +61,22 @@ class Video extends Controller {
             from: (page - 1) * 15,
             body: body
         })
-            .then((response) => {
-                const hits = response.body.hits.hits;
-                const ids = hits.map(item => item._source.id);
-
-                return this.model.findAll({
-                    where: {
-                        id: ids
-                    },
-                    include: 'Tags'
-                })
-                    .then(videos => {
-                        return res.status(200).json(videos).end();
-                    })
-            })
+            .then(response => this.getIdsFromElasticPayload(response))
+            .then(videos => res.status(200).json(videos).end())
             .catch(err => res.status(500).send('unknown error').end())
 
+    }
+
+    getIdsFromElasticPayload = (response) => {
+        const hits = response.body.hits.hits;
+        const ids = hits.map(item => item._source.id);
+
+        return this.model.findAll({
+            where: {
+                id: ids
+            },
+            include: 'Tags'
+        })
     }
 
     removeTagToVideo = (req, res) => {
@@ -87,11 +87,8 @@ class Video extends Controller {
                 if (tagId) {
                     return this.models.Tag.findByPk(tagId)
                         .then(tagToRemove => modelInstance.removeTag(tagToRemove))
-                        .then(async () => {
-                            modelInstance.reload()
-                                .then(() => res.status(200).json(modelInstance).end())
-                                .catch(err => res.status(500).send(err).end())
-                        })
+                        .then(modelInstance.reload())
+                        .then(() => res.status(200).json(modelInstance).end())
                         .catch(err => res.status(500).send(err).end())
                 } else {
                     return res.status(400).json({
@@ -176,18 +173,14 @@ class Video extends Controller {
                     if (null !== response) {
                         return response;
                     } else {
-                        return res.status(400).json({
-                            modelNotFoundError: `model not found for id ${id}`
-                        }).end();
+                        return Error(`model not found for id ${id}`)
                     }
                 })
                 .catch(err => {
-                    return res.status(200).json([]).end();
+                    return Error('unknown error');
                 });
         } else {
-            return res.status(400).json({
-                missingParamsError: "missing required parameter id"
-            }).end();
+            return Error("missing required parameter id")
         }
     }
 }
