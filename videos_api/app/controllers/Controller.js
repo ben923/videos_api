@@ -45,7 +45,6 @@ class Controller {
                 return res.status(200).json(modelInstance.toJSON());
             })
             .catch(err => {
-                console.log(err)
                 return res.status(500).send(err).end()
             })
     }
@@ -56,40 +55,26 @@ class Controller {
         this.entry = new this.model(entryToInsert);
 
         return this.entry.validate()
-            .then(() => {
-                this.entry.save()
-                    .then((result) => res.status(200).json({ created: 1 }).end())
-                    .catch(err => res.status(500).send(err).end())
-
-            })
-            .catch(validator => {
-                return res.status(400).json(validator.errors).end()
-            })
+            .then(() => this.entry.save())
+            .then((result) => res.status(200).json({ created: 1 }).end())
+            .catch(err => res.status(500).send(err).end())
     }
 
     update = (req, res) => {
         return this.findOrFailById(req, res)
-            .then(modelInstance => {
-                for (const field in req.body) {
-                    const value = req.body[field];
+            .then(modelInstance => this.applyUpdate(modelInstance))
+            .then(() => modelInstance.save())
+            .then(result => res.status(200).json({ updated: 1 }).end())
+            .catch(err => res.status(500).send(err).end());
+    }
 
-                    modelInstance[field] = value
-                }
-                return modelInstance.validate()
-                    .then(() => {
-                        modelInstance.save()
-                            .then(result => res.status(200).json({ updated: 1 }).end())
-                            .catch(err => res.status(500).send(err).end())
-                    })
-                    .catch(validator => {
-                        return res.status(400).json(validator.errors).end()
-                    })
-            })
-            .catch(err => {
-                return res.status(200).json({
-                    notFoundError: `model instance not found for id ${id}`
-                }).end();
-            });
+    applyUpdate = (modelInstance) => {
+        for (const field in req.body) {
+            const value = req.body[field];
+
+            modelInstance[field] = value
+        }
+        return modelInstance.validate()
     }
 
     delete = (req, res) => {
@@ -108,18 +93,14 @@ class Controller {
                     if (null !== response) {
                         return response;
                     } else {
-                        return res.status(400).json({
-                            modelNotFoundError: `model not found for id ${id}`
-                        }).end();
+                        return Error(`model not found for id ${id}`)
                     }
                 })
                 .catch(err => {
-                    return res.status(200).json([]).end();
+                    return Error('unknown error');
                 });
         } else {
-            return res.status(400).json({
-                missingParamsError: "missing required parameter id"
-            }).end();
+            return Error("missing required parameter id")
         }
     }
 }
