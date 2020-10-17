@@ -21,11 +21,11 @@ const init = (sequelize) => {
         }
     }, {
         timestamps: true,
-        hooks: {
+        // hooks: {
             // afterCreate,
             // afterUpdate,
             // afterDestroy,
-        }
+        // }
     });
 
     const Tag = sequelize.define('Tag', {
