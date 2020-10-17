@@ -4,29 +4,27 @@ const init = require('../elasticsearch');
 const logger = require('../../../logger');
 
 const toSearchableObject = (video) => {
-    return new Promise((resolve, reject) => {
-        video.getTags()
+    return video.getTags()
         .then(tags => {
-            const {id, name, description} = video
+            const { id, name, description } = video
 
-            tags = tags.map((item) => ({id: item.id, name: item.name}));
-        
-            resolve({
+            tags = tags.map((item) => ({ id: item.id, name: item.name }));
+
+            return({
                 id,
                 name,
                 description,
                 tags,
             })
         });
-    })
 }
 
-const esIndex = (video) => {
-    toSearchableObject(video).then(searchableVideo => {
-        init().then(es => {
+const esIndex = async (video) => {
+    return toSearchableObject(video).then(searchableVideo => {
+        return init().then(es => {
 
             logger.info('indexing video')
-        
+
             es.search({
                 index: 'videos',
                 size: 1,
@@ -38,20 +36,23 @@ const esIndex = (video) => {
                     }
                 }
             }, (err, result) => {
-                if(err){
+                if (err) {
                     console.log(err);
+                    return err
                 }
                 const hits = result.body.hits.hits;
-        
-                if(!hits[0]){
+
+                if (!hits[0]) {
                     es.index({
                         index: 'videos',
                         body: searchableVideo
                     }, (err, res) => {
-                        if(!err){
+                        if (!err) {
                             logger.info('successfully indexed video');
+                            return searchableVideo
                         } else {
                             logger.error(err);
+                            return err
                         }
                     });
                 } else {
@@ -61,10 +62,12 @@ const esIndex = (video) => {
                         id: video._id,
                         body: searchableVideo
                     }, (err, res) => {
-                        if(!err){
+                        if (!err) {
                             logger.info('successfully indexed video');
+                            return searchableVideo
                         } else {
                             logger.error(err);
+                            return err
                         }
                     });
                 }
@@ -73,8 +76,8 @@ const esIndex = (video) => {
     });
 }
 
-const esDelete = (video) => {
-    init().then(es => {
+const esDelete = async (video) => {
+    return init().then(es => {
         es.search({
             size: 1,
             body: {
@@ -85,16 +88,22 @@ const esDelete = (video) => {
                 }
             }
         }, (err, res) => {
-            if(!err){
+            if (!err) {
                 const hits = res.body.hits.hits;
-    
-                if(hits[0]){
+
+                if (hits[0]) {
                     es.delete({
                         index: 'videos',
                         id: hits[0]._id
+                    }, (err, res) => {
+                        if(!err){
+                            return video
+                        } else {
+                            return err
+                        }
                     });
                 }
-    
+
             }
         })
     })

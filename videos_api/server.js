@@ -4,25 +4,19 @@ const initExpress = require('./express');
 const logger = require('./logger');
 const config = require('config');
 
-logger.info('initing modules');
-
-init()
-    .then(modules => {
-        logger.info('charging app');
-        initExpress()
-        .then(server => {
-            new App({
-                modules,
-                server,
-                logger,
-                config
-            });
-        })
-        .catch(err => {
-            logger.error(err);
+/**
+ * Sur la doc du mdn ils ne disent pas d'appeler la function avec les parenthèse mais bizarrement si je ne le fais pas ça me retourne les promises
+ */
+return Promise.all([
+    init(),
+    initExpress()
+])
+    .then(([modules, server]) => {
+        return new App({
+            modules,
+            server,
+            logger,
+            config
         })
     })
-    .catch(err => {
-        logger.error(err);
-
-    })
+    .catch(err => console.log(err))
