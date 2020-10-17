@@ -1,6 +1,6 @@
 {
     "server": {
-        "port": 1337
+        "port": 2048
     },
     "app": {
         "database": {
