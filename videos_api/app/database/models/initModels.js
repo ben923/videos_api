@@ -22,9 +22,9 @@ const init = (sequelize) => {
     }, {
         timestamps: true,
         hooks: {
-            afterCreate,
-            afterUpdate,
-            afterDestroy,
+            // afterCreate,
+            // afterUpdate,
+            // afterDestroy,
         }
     });
 
