@@ -10,7 +10,7 @@ services:
     environment:
       NODE_APP_DEBUG: 'info'
     ports:
-      - '1337:1337'
+      - '2048:2048'
     volumes:
       - './videos_api:/var/app'
     links: 
@@ -28,7 +28,6 @@ services:
     environment:
       - node.name=elasticsearch
       - cluster.name=elasticsearch
-      - network.host=0.0.0.0
       - bootstrap.memory_lock=true
       - discovery.seed_hosts=0.0.0.0,elasticsearch
       - discovery.type=single-node
