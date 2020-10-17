@@ -1,0 +1,22 @@
+{
+    "server": {
+        "port": 1337
+    },
+    "app": {
+        "database": {
+            "host": "postgres",
+            "user": "postgres",
+            "pass": "root"
+        },
+        "elastic": {
+            "host": "elasticsearch:9200"
+        },
+        "redis": {
+            "host": "redis",
+            "port": 6379
+        },
+        "authentication": {
+            "secret": "C4m1ll3L4B35792320"
+        }
+    }
+}
