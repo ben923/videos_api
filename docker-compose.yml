@@ -4,9 +4,12 @@ services:
     build: .
     command: 'node server.js'
     depends_on:
-      - postgres
-      - redis
-      - elasticsearch
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
     environment:
       NODE_APP_DEBUG: 'info'
     ports:
@@ -22,6 +25,11 @@ services:
     environment:
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=videos
+    healthcheck:
+        test: [ "CMD", "pg_isready", "-q", "-d", "videos", "-U", "postgres" ]
+        timeout: 45s
+        interval: 10s
+        retries: 10
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
     container_name: elasticsearch
@@ -32,6 +40,11 @@ services:
       - discovery.seed_hosts=0.0.0.0,elasticsearch
       - discovery.type=single-node
       - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+    healthcheck:
+        test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+        interval: 30s
+        timeout: 30s
+        retries: 3
     ulimits:
       memlock:
         soft: -1
@@ -42,3 +55,8 @@ services:
     image: redis:latest
     volumes:
       - ./redis/redis.conf:/opt/bitnami/redis/mounted-etc/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
