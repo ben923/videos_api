@@ -57,15 +57,14 @@ class Controller {
         return this.entry.validate()
             .then(() => this.entry.save())
             .then((result) => res.status(200).json({ created: 1 }).end())
-            .catch(err => res.status(500).send(err).end())
+            .catch(err => res.status(500).send(err.message).end())
     }
 
     update = (req, res) => {
         return this.findOrFailById(req, res)
             .then(modelInstance => this.applyUpdate(modelInstance, req))
-            .then(() => modelInstance.save())
             .then(result => res.status(200).json({ updated: 1 }).end())
-            .catch(err => res.status(500).send(err).end());
+            .catch(err => res.status(500).send(err.message).end());
     }
 
     applyUpdate = (modelInstance, req) => {
@@ -74,7 +73,7 @@ class Controller {
 
             modelInstance[field] = value
         }
-        return modelInstance.validate()
+        return modelInstance.validate().then(() => modelInstance.save())
     }
 
     delete = (req, res) => {
