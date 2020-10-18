@@ -1,5 +1,6 @@
 const Controller = require('./Controller');
 const initModels = require('../database/database');
+const { afterUpdate } = require('../database/hooks/video');
 const promisify = require('util');
 
 class Video extends Controller {
@@ -63,7 +64,7 @@ class Video extends Controller {
         })
             .then(response => this.getIdsFromElasticPayload(response))
             .then(videos => res.status(200).json(videos).end())
-            .catch(err => res.status(500).send('unknown error').end())
+            .catch(err => res.status(500).send(err.message).end())
 
     }
 
@@ -89,7 +90,7 @@ class Video extends Controller {
                         .then(tagToRemove => modelInstance.removeTag(tagToRemove))
                         .then(modelInstance.reload())
                         .then(() => res.status(200).json(modelInstance).end())
-                        .catch(err => res.status(500).send(err).end())
+                        .catch(err => res.status(500).send(err.message).end())
                 } else {
                     return res.status(400).json({
                         missingParamsError: "missing required parameter tagId"
@@ -125,7 +126,7 @@ class Video extends Controller {
                                         return videoInstance.addTag(tagModelInstance)
                                             .then(() => videoInstance.reload())
                                             .then(() => res.status(200).json(videoInstance).end())
-                                            .catch((err) => res.status(500).send(err).end());
+                                            .catch((err) => res.status(500).send(err.message).end());
 
                                     } else {
                                         return res.status(400).json({
@@ -156,7 +157,7 @@ class Video extends Controller {
                     .then(modelInstance => {
                         redisSet(`_video_/${modelInstance / id}`, 300, modelInstance)
                             .then(() => res.status(200).json(modelInstance.toJSON()))
-                            .catch(err => res.status(500).send(err).end())
+                            .catch(err => res.status(500).send(err.message).end())
                     })
                     .catch(err => {
                         return res.status(500).send(err).end()

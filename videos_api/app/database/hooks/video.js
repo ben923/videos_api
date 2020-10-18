@@ -25,7 +25,7 @@ const esIndex = async (video) => {
 
             logger.info('indexing video')
 
-            es.search({
+            return es.search({
                 index: 'videos',
                 size: 1,
                 body: {
