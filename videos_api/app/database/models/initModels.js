@@ -108,30 +108,37 @@ const init = (sequelize) => {
 
     /**
      * Promise.all ici car si j'ai bien compris les promise s'executent en paralelle les unes des autres avec cette methode
+     * use case ici on attends d'avoir créé les tables avant de creer les jointures mais pas très propre j'ai l'impression
      */
 
     return Promise.all([
         Video.sync(),
         Tag.sync(),
         User.sync(),
-        UserFavorite.sync(),
-        VideoTag.sync()
     ])
         .then((/**Pas besoin des valeur de retour dans mon use case */) => {
-            /**
-             * A priori d'apres la doc les association ne retourne pas de promises
-             */
-            Video.belongsToMany(Tag, { through: VideoTag });
-            Tag.belongsToMany(Video, { through: VideoTag });
-            User.belongsToMany(Video, { through: UserFavorite });
 
-            return({
-                Video,
-                Tag,
-                VideoTag,
-                User,
-                UserFavorite
-            });
+            return Promise.all([
+                UserFavorite.sync(),
+                VideoTag.sync()
+            ])
+                .then(() => {
+                    /**
+                     * A priori d'apres la doc les association ne retourne pas de promises
+                     */
+                    Video.belongsToMany(Tag, { through: VideoTag });
+                    Tag.belongsToMany(Video, { through: VideoTag });
+                    User.belongsToMany(Video, { through: UserFavorite });
+
+                    return ({
+                        Video,
+                        Tag,
+                        VideoTag,
+                        User,
+                        UserFavorite
+                    });
+                })
+                .catch(err => Promise.reject(err))
         })
         .catch(err => Promise.reject(err))
 
