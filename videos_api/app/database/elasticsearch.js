@@ -12,9 +12,9 @@ const init = () => {
         })
             .catch(err => {
                 if (err.message != 'resource_already_exists_exception')
-                    return reject(console.log(err.message))
+                    return console.log(err.message)
             })
-            .then(() => resolve(client));
+            .then(() => client);
     } else {
         return Promise.reject(Error('missing configuration'));
     }

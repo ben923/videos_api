@@ -10,8 +10,8 @@ const init = () => {
 
         return sequelize.authenticate()
             .then(() => initModels(sequelize))
-            .then(models => resolve(models))
-            .catch(err => reject(err))
+            .then(models => models)
+            .catch(err => err)
     }
 }
 
