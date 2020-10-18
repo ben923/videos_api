@@ -133,9 +133,7 @@ const init = (sequelize) => {
                 UserFavorite
             });
         })
-        .catch(err => {
-            return(err)
-        })
+        .catch(err => Promise.reject(err))
 
 }
 

@@ -11,7 +11,7 @@ const init = () => {
         return sequelize.authenticate()
             .then(() => initModels(sequelize))
             .then(models => models)
-            .catch(err => err)
+            .catch(err => Promise.reject(err))
     }
 }
 

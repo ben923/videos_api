@@ -4,14 +4,12 @@ const initExpress = require('./express');
 const logger = require('./logger');
 const config = require('config');
 
-/**
- * Sur la doc mdn ils ne disent pas d'appeler la function avec les parenthèse mais bizarrement si je ne le fais pas ça me retourne les promises
- */
 return Promise.all([
     init(),
     initExpress()
 ])
     .then(([modules, server]) => {
+        console.log(modules)
         return new App({
             modules,
             server,

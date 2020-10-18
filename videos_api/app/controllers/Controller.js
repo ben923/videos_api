@@ -92,14 +92,14 @@ class Controller {
                     if (null !== response) {
                         return response;
                     } else {
-                        return Error(`model not found for id ${id}`)
+                        return Promise.resolve(Error(`model not found for id ${id}`))
                     }
                 })
                 .catch(err => {
-                    return Error('unknown error');
+                    return Promise.reject(Error('unknown error'));
                 });
         } else {
-            return Error("missing required parameter id")
+            return Promise.reject(Error("missing required parameter id"))
         }
     }
 }

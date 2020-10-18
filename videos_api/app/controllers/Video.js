@@ -82,67 +82,61 @@ class Video extends Controller {
 
     removeTagToVideo = (req, res) => {
         return this.findOrFailById(req, res)
-            .then(modelInstance => {
-                const tagId = req.params.tagId;
+            .then(modelInstance => this.applyRemoveTagToVideo(req, modelInstance))
+            .catch(err => res.status(500).send(err.message).end())
+    }
 
-                if (tagId) {
-                    return this.models.Tag.findByPk(tagId)
-                        .then(tagToRemove => modelInstance.removeTag(tagToRemove))
-                        .then(modelInstance.reload())
-                        .then(() => res.status(200).json(modelInstance).end())
-                        .catch(err => res.status(500).send(err.message).end())
-                } else {
-                    return res.status(400).json({
-                        missingParamsError: "missing required parameter tagId"
-                    }).end();
-                }
-            })
-            .catch(err => {
-                return res.status(500).json(err).end()
-            })
+    applyRemoveTagToVideo = (req, modelInstance) => {
+        const tagId = req.params.tagId;
+
+        if (tagId) {
+            return this.models.Tag.findByPk(tagId)
+                .then(tagToRemove => modelInstance.removeTag(tagToRemove))
+                .then(modelInstance.reload())
+                .then(() => res.status(200).json(modelInstance).end())
+                .catch(err => Promise.reject(err))
+        } else {
+            return Promise.reject(Error("missing required parameter tagId"))
+        }
     }
 
     addTagToVideo = (req, res) => {
-        const tagId = req.params.tagId;
         return this.findOrFailById(req, res)
-            .then(videoInstance => {
-                if (tagId) {
-                    return this.models.Tag.findByPk(req.params.tagId)
-                        .then(async tagModelInstance => {
+            .then(videoInstance => this.applyAddTagToVideo(req, videoInstance))
+            .then(res => res.status(200).send(videoInstance).end())
+            .catch(err => res.status(400).send(err.message).end())
+    }
 
-                            if (null === tagModelInstance) {
-                                return res.status(400).json({
-                                    modelNotFoundError: `no tag model found for id ${tagId}`
-                                })
+    applyAddTagToVideo = (req, videoInstance) => {
+        const tagId = req.params.tagId;
+        if (tagId) {
+            return this.models.Tag.findByPk(req.params.tagId)
+                .then(async tagModelInstance => {
+
+                    if (null === tagModelInstance) {
+                        return Promise.reject(Error(`no tag model found for id ${tagId}`))
+                    }
+
+                    return videoInstance.getTags({
+                        where: {
+                            id: tagId
+                        }
+                    })
+                        .then(async currentVideoTags => {
+                            if (currentVideoTags.length === 0) {
+                                return videoInstance.addTag(tagModelInstance)
+                                    .then(() => videoInstance.reload())
+                                    .then(() => res.status(200).json(videoInstance).end())
+                                    .catch((err) => Promise.reject(err));
+
+                            } else {
+                                return  Promise.reject(Error("this model is already associated with this tag"))
                             }
-
-                            return videoInstance.getTags({
-                                where: {
-                                    id: tagId
-                                }
-                            })
-                                .then(async currentVideoTags => {
-                                    if (currentVideoTags.length === 0) {
-                                        return videoInstance.addTag(tagModelInstance)
-                                            .then(() => videoInstance.reload())
-                                            .then(() => res.status(200).json(videoInstance).end())
-                                            .catch((err) => res.status(500).send(err.message).end());
-
-                                    } else {
-                                        return res.status(400).json({
-                                            associationError: "this model is already associated with this tag"
-                                        }).end()
-                                    }
-                                })
-                                .catch(err => {
-                                    return res.status(500).send(err).end()
-                                });
                         })
-                        .catch(err => {
-                            return res.status(500).send(err).end()
-                        })
-                }
-            })
+                        .catch(err => Promise.reject(err));
+                })
+                .catch(err => Promise.reject(err))
+        }
     }
 
     read = (req, res) => {
@@ -160,7 +154,7 @@ class Video extends Controller {
                             .catch(err => res.status(500).send(err.message).end())
                     })
                     .catch(err => {
-                        return res.status(500).send(err).end()
+                        return res.status(500).send(err.message).end()
                     });
             });
     }
@@ -174,14 +168,14 @@ class Video extends Controller {
                     if (null !== response) {
                         return response;
                     } else {
-                        return Error(`model not found for id ${id}`)
+                        return Promise.resolve(Error(`model not found for id ${id}`))
                     }
                 })
                 .catch(err => {
-                    return Error('unknown error');
+                    return Promise.reject(Error('unknown error'));
                 });
         } else {
-            return Error("missing required parameter id")
+            return Promise.reject(Error("missing required parameter id"))
         }
     }
 }
