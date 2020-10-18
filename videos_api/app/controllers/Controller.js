@@ -62,13 +62,13 @@ class Controller {
 
     update = (req, res) => {
         return this.findOrFailById(req, res)
-            .then(modelInstance => this.applyUpdate(modelInstance))
+            .then(modelInstance => this.applyUpdate(modelInstance, req))
             .then(() => modelInstance.save())
             .then(result => res.status(200).json({ updated: 1 }).end())
             .catch(err => res.status(500).send(err).end());
     }
 
-    applyUpdate = (modelInstance) => {
+    applyUpdate = (modelInstance, req) => {
         for (const field in req.body) {
             const value = req.body[field];
 
