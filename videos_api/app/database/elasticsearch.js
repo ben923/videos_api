@@ -11,8 +11,12 @@ const init = () => {
             index: 'videos'
         })
             .catch(err => {
-                if (err.message != 'resource_already_exists_exception')
-                    return console.log(err.message)
+                if (err.message != 'resource_already_exists_exception'){
+                    console.log(err.message)
+                    return client
+                } else {
+                    Promise.reject(err)
+                }
             })
             .then(() => client);
     } else {
