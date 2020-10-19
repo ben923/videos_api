@@ -103,7 +103,7 @@ class Video extends Controller {
     addTagToVideo = (req, res) => {
         return this.findOrFailById(req, res)
             .then(videoInstance => this.applyAddTagToVideo(req, videoInstance))
-            .then(res => res.status(200).send(videoInstance).end())
+            .then(result => res.status(200).send(videoInstance).end())
             .catch(err => res.status(400).send(err.message).end())
     }
 
