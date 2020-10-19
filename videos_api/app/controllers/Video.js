@@ -126,7 +126,7 @@ class Video extends Controller {
                             if (currentVideoTags.length === 0) {
                                 return videoInstance.addTag(tagModelInstance)
                                     .then(() => videoInstance.reload())
-                                    .then(() => res.status(200).json(videoInstance).end())
+                                    .then(() => videoInstance)
                                     .catch((err) => Promise.reject(err));
 
                             } else {
