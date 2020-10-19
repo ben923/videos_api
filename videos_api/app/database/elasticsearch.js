@@ -13,9 +13,9 @@ const init = () => {
             .catch(err => {
                 if (err.message != 'resource_already_exists_exception'){
                     console.log(err.message)
-                    return client
-                } else {
                     Promise.reject(err)
+                } else {
+                    return client
                 }
             })
             .then(() => client);
