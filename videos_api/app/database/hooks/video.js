@@ -10,7 +10,7 @@ const toSearchableObject = (video) => {
 
             tags = tags.map((item) => ({ id: item.id, name: item.name }));
 
-            return({
+            return ({
                 id,
                 name,
                 description,
@@ -35,43 +35,31 @@ const esIndex = async (video) => {
                         }
                     }
                 }
-            }, (err, result) => {
-                if (err) {
-                    console.log(err);
-                    return err
-                }
+            }).then((result) => {
                 const hits = result.body.hits.hits;
-
                 if (!hits[0]) {
                     es.index({
                         index: 'videos',
                         body: searchableVideo
-                    }, (err, res) => {
-                        if (!err) {
-                            logger.info('successfully indexed video');
-                            return searchableVideo
-                        } else {
-                            logger.error(err);
-                            return err
-                        }
-                    });
+                    }).then((res) => {
+                        logger.error(err);
+                        return err
+                    })
+                    .catch(err => Promise.reject(err));
                 } else {
                     const video = hits[0];
                     es.index({
                         index: 'videos',
                         id: video._id,
                         body: searchableVideo
-                    }, (err, res) => {
-                        if (!err) {
-                            logger.info('successfully indexed video');
-                            return searchableVideo
-                        } else {
-                            logger.error(err);
-                            return err
-                        }
-                    });
+                    }).then((res) => {
+                        logger.info('successfully indexed video');
+                        return searchableVideo
+                    })
+                        .catch(err => Promise.reject(err));
                 }
             })
+                .catch(err => Promise.reject(err))
         })
     });
 }
@@ -96,7 +84,7 @@ const esDelete = async (video) => {
                         index: 'videos',
                         id: hits[0]._id
                     }, (err, res) => {
-                        if(!err){
+                        if (!err) {
                             return video
                         } else {
                             return err
