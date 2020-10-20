@@ -5,7 +5,7 @@ const init = () => {
     const hostPath = 'app.elastic.host'
     if (config.has(hostPath)) {
         const host = config.get(hostPath);
-        var client = new Client({ node: `http://${host}` });
+        const client = new Client({ node: `http://${host}` });
 
         return client.indices.create({
             index: 'videos'

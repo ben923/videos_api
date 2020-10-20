@@ -20,14 +20,15 @@ class Controller {
 
     readAll = async (req, res) => {
         const limit = 15;
+        let page;
 
         if (req.query.page) {
-            var page = Number(req.query.page);
+            page = Number(req.query.page);
             if (page <= 0) {
                 page = 1;
             }
         } else {
-            var page = 1;
+            page = 1;
         }
         const entries = await this.model.findAll(
             {

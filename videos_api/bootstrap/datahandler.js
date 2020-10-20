@@ -1,5 +1,5 @@
 const handler = (req, res, next) => {
-    var data = "";
+    let data = "";
 
     req.on('data', (chunk) => data += chunk);
     return req.on('end', () => {
