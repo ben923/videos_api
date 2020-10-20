@@ -3,12 +3,13 @@ const bootstrap = require('./bootstrap');
 const config = require('config');
 const logger = require('./logger');
 
-const init = () => {
+const init = (port = null) => {
     return new Promise((resolve, reject) => {
-        let port = 1337;
         
-        if (config.has('server.port')) {
+        if (config.has('server.port') && !port) {
             port = config.get('server.port');
+        } else {
+            port = port || 1337;
         }
         
         const server = express();
