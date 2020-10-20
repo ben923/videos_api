@@ -54,7 +54,7 @@ class Video extends Controller {
             ];
         }
 
-        var page = query.page && query.page > 0 ? page : 1;
+        let page = query.page && query.page > 0 ? page : 1;
 
         return this.es.search({
             index: 'videos',
