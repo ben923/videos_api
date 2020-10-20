@@ -2,7 +2,7 @@ version: '3'
 services: 
   web:
     build: .
-    command: 'node server.js'
+    command: 'bash -c "export NODE_APP_DEBUG=warn && npm run test && export NODE_APP_DEBUG=info && node server.js"'
     depends_on:
       postgres:
         condition: service_healthy
@@ -11,7 +11,7 @@ services:
       elasticsearch:
         condition: service_healthy
     environment:
-      NODE_APP_DEBUG: 'info'
+      NODE_APP_DEBUG: 'warn'
     ports:
       - '2048:2048'
     volumes:
