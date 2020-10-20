@@ -42,8 +42,7 @@ const esIndex = async (video) => {
                         index: 'videos',
                         body: searchableVideo
                     }).then((res) => {
-                        logger.error(err);
-                        return err
+                        return video
                     })
                     .catch(err => Promise.reject(err));
                 } else {
